@@ -1,4 +1,11 @@
-import { GraphQLFloat, GraphQLList, GraphQLObjectType, GraphQLString } from 'graphql';
+import {
+  GraphQLFloat,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql';
 import { UUIDType } from './uuid.js';
 import { ProfileType } from './ProfileType.js';
 import prisma from '../prisma.js';
@@ -31,26 +38,47 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
 
     userSubscribedTo: {
       type: new GraphQLList(UserType),
-      resolve: async ({ id }: User) => {
-        const authors = await prisma.subscribersOnAuthors.findMany({
-          where: { subscriberId: id },
-          select: { author: true },
-        });
-
-        return authors.map(({ author }) => author);
-      },
+      resolve: async ({ id }: User) =>
+        await prisma.user.findMany({
+          where: {
+            subscribedToUser: {
+              some: {
+                subscriberId: id,
+              },
+            },
+          },
+        }),
     },
 
     subscribedToUser: {
       type: new GraphQLList(UserType),
-      resolve: async ({ id }: User) => {
-        const subscribers = await prisma.subscribersOnAuthors.findMany({
-          where: { authorId: id },
-          select: { subscriber: true },
-        });
-
-        return subscribers.map(({ subscriber }) => subscriber);
-      },
+      resolve: async ({ id }: User) =>
+        await prisma.user.findMany({
+          where: {
+            userSubscribedTo: {
+              some: {
+                authorId: id,
+              },
+            },
+          },
+        }),
     },
+  }),
+});
+
+export const CreateUserInputType = new GraphQLInputObjectType({
+  name: 'CreateUserInput',
+  fields: () => ({
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    balance: { type: new GraphQLNonNull(GraphQLFloat) },
+  }),
+});
+
+export const ChangeUserInputType = new GraphQLInputObjectType({
+  name: 'ChangeUserInput',
+  fields: () => ({
+    id: { type: UUIDType },
+    name: { type: GraphQLString },
+    balance: { type: GraphQLFloat },
   }),
 });

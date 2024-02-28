@@ -16,12 +16,26 @@ export type User = {
   balance: number;
 };
 
+export type CreateUser = {
+  dto: Omit<User, 'id'>;
+};
+
+export type ChangeUser = CreateUser & Args;
+
 export type Profile = {
   id: string;
-  isMake: boolean;
+  isMale: boolean;
   yearOfBirth: number;
   userId: string;
   memberTypeId: MemberTypeId;
+};
+
+export type CreateProfile = {
+  dto: Omit<Profile, 'id'>;
+};
+
+export type ChangeProfile = Args & {
+  dto: Omit<Profile, 'id, userId'>;
 };
 
 export type Post = {
@@ -30,3 +44,9 @@ export type Post = {
   content: string;
   authorId: string;
 };
+
+export type CreatePost = {
+  dto: Omit<Post, 'id'>;
+};
+
+export type ChangePost = CreatePost & Args;
