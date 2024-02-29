@@ -8,6 +8,16 @@ import { createProfileLoader } from './loaders/profileLoader.js';
 import { createSubscribedToUserLoader } from './loaders/subscribedToUser.js';
 import { createUserLoader } from './loaders/userLoader.js';
 import { createUserToSubscribeLoader } from './loaders/userSubscribedToLoader.js';
+import { PrismaClient } from '@prisma/client';
+
+const buldDataLoaders = (prisma: PrismaClient) => ({
+  postsLoader: createPostsLoader(prisma),
+  profileLoader: createProfileLoader(prisma),
+  userLoader: createUserLoader(prisma),
+  userSubscribedToLoader: createUserToSubscribeLoader(prisma),
+  subscribedToUser: createSubscribedToUserLoader(prisma),
+  memeberTypeLoader: createMemeberTypeLoader(prisma),
+});
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
@@ -35,14 +45,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         variableValues: variables,
         contextValue: {
           prisma,
-          loaders: {
-            postsLoader: createPostsLoader(prisma),
-            profileLoader: createProfileLoader(prisma),
-            userLoader: createUserLoader(prisma),
-            userSubscribedToLoader: createUserToSubscribeLoader(prisma),
-            subscribedToUser: createSubscribedToUserLoader(prisma),
-            memeberTypeLoader: createMemeberTypeLoader(prisma),
-          },
+          loaders: buldDataLoaders(prisma),
         },
       });
     },
