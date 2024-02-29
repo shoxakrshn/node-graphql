@@ -3,6 +3,8 @@ import { createGqlResponseSchema, gqlResponseSchema, schemaApp } from './schemas
 import { graphql, parse, validate } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 
+import { Context } from './types/model/ModelTypes.js';
+
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.route({
     url: '/',
@@ -26,6 +28,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema: schemaApp,
         source: query,
         variableValues: variables,
+        contextValue: {
+          dataloaders: new WeakMap(),
+        } as Context,
       });
     },
   });

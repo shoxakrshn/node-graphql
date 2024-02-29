@@ -2,10 +2,12 @@ import { GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { UserType } from './model/UserType.js';
 import prisma from './prisma.js';
 import { UUIDType } from './model/uuid.js';
-import { Args } from './model/ModelTypes.js';
+import { Args, Context } from './model/ModelTypes.js';
 import { MemberType, MemberTypeId } from './model/MemberType.js';
 import { ProfileType } from './model/ProfileType.js';
 import { PostType } from './model/PostType.js';
+import DataLoader from 'dataloader';
+import { batchUsersByIds } from '../loaders/userLoader.js';
 
 export const Query = new GraphQLObjectType({
   name: 'Query',
@@ -21,10 +23,18 @@ export const Query = new GraphQLObjectType({
       args: {
         id: { type: new GraphQLNonNull(UUIDType) },
       },
-      resolve: async (_, { id }: Args) =>
-        await prisma.user.findUnique({
-          where: { id },
-        }),
+      resolve: async (_, { id }: Args, context, info) => {
+        const rawContext = context as Context;
+        const { dataloaders } = rawContext;
+        let userLoader = dataloaders.get(info.fieldNodes);
+
+        if (!userLoader) {
+          userLoader = new DataLoader(batchUsersByIds);
+          dataloaders.set(info.fieldNodes, userLoader);
+        }
+
+        return userLoader?.load(id);
+      },
     },
 
     memberTypes: {
