@@ -1,11 +1,13 @@
+import DataLoader from 'dataloader';
 import { MemberTypeId } from '../../../member-types/schemas.js';
+import { FieldNode } from 'graphql';
 
 export type Args = {
   id: string;
 };
 
 export type Member = {
-  id: MemberTypeId;
+  id: MemberTypeId | string;
   discount: number;
   postsLimitPerMonth: number;
 };
@@ -27,7 +29,7 @@ export type Profile = {
   isMale: boolean;
   yearOfBirth: number;
   userId: string;
-  memberTypeId: MemberTypeId;
+  memberTypeId: MemberTypeId | string;
 };
 
 export type CreateProfile = {
@@ -50,3 +52,48 @@ export type CreatePost = {
 };
 
 export type ChangePost = CreatePost & Args;
+
+type SubsId = {
+  subscriberId: string;
+  authorId: string;
+};
+
+type SubsType = 'userSubscribedTo' | 'subscribedToUser';
+
+type Example = Record<SubsType, SubsId>;
+export type AuthorSub = Omit<Example, 'userSubscribedTo'>;
+export type subscribedToUser = Omit<Example, 'subscribedToUser'>;
+
+export type Subscription = {
+  subscribedToUser: {
+    subscriberId: string;
+    authorId: string;
+  }[];
+} & User;
+
+export type Author = {
+  userSubscribedTo: {
+    subscriberId: string;
+    authorId: string;
+  }[];
+} & User;
+
+export type GraphQLContext = {
+  postsLoader: DataLoader<unknown, Post[], unknown>;
+  profileLoader: DataLoader<unknown, Profile | undefined, unknown>;
+  membersLoader: DataLoader<unknown, Member | undefined, unknown>;
+  userSubscribedToLoader: DataLoader<unknown, Subscription[], unknown>;
+  subscribedToUserLoader: DataLoader<unknown, Author[], unknown>;
+};
+
+export type ContextUnion =
+  | DataLoader<unknown, Post[], unknown>
+  | DataLoader<unknown, User | undefined, unknown>
+  | DataLoader<unknown, Profile | undefined, unknown>
+  | DataLoader<unknown, Member | undefined, unknown>
+  | DataLoader<unknown, Subscription[], unknown>
+  | DataLoader<unknown, Author[], unknown>;
+
+export type Context = {
+  dataloaders: WeakMap<readonly FieldNode[], ContextUnion>;
+};
