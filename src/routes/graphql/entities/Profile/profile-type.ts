@@ -5,9 +5,11 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from 'graphql';
-import { UUIDType } from './uuid.js';
-import { MemberType, MemberTypeId } from './MemberType.js';
-import { Context, Profile } from './ModelTypes.js';
+import { UUIDType } from '../../types/uuid.js';
+import { MemberType } from '../Member/member-type.js';
+import { Context } from '../../types/types.js';
+import { MemberTypeId } from '../../types/memberTypeId.js';
+import { Profile } from './types.js';
 
 export const ProfileType = new GraphQLObjectType({
   name: 'Profile',

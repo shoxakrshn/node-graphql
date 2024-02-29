@@ -1,8 +1,8 @@
 import DataLoader from 'dataloader';
-import { Profile } from '../types/model/ModelTypes.js';
 import { PrismaClient } from '@prisma/client';
+import { Profile } from './types.js';
 
-export const batchProfilesByUserIds =
+const batchProfilesByUserIds =
   (prisma: PrismaClient) => async (userIds: readonly unknown[]) => {
     const ids = userIds as string[];
     const profiles: Profile[] = await prisma.profile.findMany({

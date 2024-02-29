@@ -1,8 +1,8 @@
 import DataLoader from 'dataloader';
-import { Post } from '../types/model/ModelTypes.js';
 import { PrismaClient } from '@prisma/client';
+import { Post } from './types.js';
 
-export const batchPostsByUserIds =
+const batchPostsByUserIds =
   (prisma: PrismaClient) => async (userIds: readonly unknown[]) => {
     const ids = userIds as string[];
     const posts: Post[] = await prisma.post.findMany({
