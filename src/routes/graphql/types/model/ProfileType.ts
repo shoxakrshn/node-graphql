@@ -7,10 +7,7 @@ import {
 } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { MemberType, MemberTypeId } from './MemberType.js';
-import prisma from '../prisma.js';
 import { Context, Profile } from './ModelTypes.js';
-import { batchMemberTypeByUserIds } from '../../loaders/membersLoader.js';
-import DataLoader from 'dataloader';
 
 export const ProfileType = new GraphQLObjectType({
   name: 'Profile',
@@ -24,18 +21,8 @@ export const ProfileType = new GraphQLObjectType({
 
     memberType: {
       type: MemberType,
-      resolve: async (parent: Profile, _, context, info) => {
-        const rawContext = context as Context;
-        const { dataloaders } = rawContext;
-        let memberTypeLoader = dataloaders.get(info.fieldNodes);
-
-        if (!memberTypeLoader) {
-          memberTypeLoader = new DataLoader(batchMemberTypeByUserIds);
-          dataloaders.set(info.fieldNodes, memberTypeLoader);
-        }
-
-        return memberTypeLoader?.load(parent.memberTypeId);
-      },
+      resolve: async (parent: Profile, _, { loaders: { memeberTypeLoader } }: Context) =>
+        memeberTypeLoader.load(parent.memberTypeId),
     },
   }),
 });

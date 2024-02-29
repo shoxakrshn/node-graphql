@@ -1,6 +1,7 @@
 import DataLoader from 'dataloader';
 import { MemberTypeId } from '../../../member-types/schemas.js';
 import { FieldNode } from 'graphql';
+import { PrismaClient } from '@prisma/client';
 
 export type Args = {
   id: string;
@@ -78,22 +79,28 @@ export type Author = {
   }[];
 } & User;
 
-export type GraphQLContext = {
-  postsLoader: DataLoader<unknown, Post[], unknown>;
-  profileLoader: DataLoader<unknown, Profile | undefined, unknown>;
-  membersLoader: DataLoader<unknown, Member | undefined, unknown>;
-  userSubscribedToLoader: DataLoader<unknown, Subscription[], unknown>;
-  subscribedToUserLoader: DataLoader<unknown, Author[], unknown>;
+export type Loaders = {
+  postsLoader: DataLoader<string, Post[]>;
+  profileLoader: DataLoader<string, Profile>;
+  userLoader: DataLoader<string, User>;
+  userSubscribedToLoader: DataLoader<string, Member>;
+  subscribedToUser: DataLoader<string, Subscription[]>;
+  memeberTypeLoader: DataLoader<string, Author[]>;
 };
-
-export type ContextUnion =
-  | DataLoader<unknown, Post[], unknown>
-  | DataLoader<unknown, User | undefined, unknown>
-  | DataLoader<unknown, Profile | undefined, unknown>
-  | DataLoader<unknown, Member | undefined, unknown>
-  | DataLoader<unknown, Subscription[], unknown>
-  | DataLoader<unknown, Author[], unknown>;
 
 export type Context = {
-  dataloaders: WeakMap<readonly FieldNode[], ContextUnion>;
+  prisma: PrismaClient;
+  loaders: Loaders;
 };
+
+export type Context2 = {
+  prisma: PrismaClient;
+  buildLoader: <T>(
+    prisma: PrismaClient,
+    callback: CallbackType,
+  ) => DataLoader<string, T | T[], string>;
+};
+
+export type CallbackType = <T>(
+  dbClient: PrismaClient,
+) => DataLoader.BatchLoadFn<string, T | T[] | T[][]>;

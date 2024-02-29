@@ -8,14 +8,8 @@ import {
 } from 'graphql';
 import { UUIDType } from './uuid.js';
 import { ProfileType } from './ProfileType.js';
-import prisma from '../prisma.js';
 import { PostType } from './PostType.js';
 import { Context, User } from './ModelTypes.js';
-import DataLoader from 'dataloader';
-import { batchPostsByUserIds } from '../../loaders/postLoader.js';
-import { batchProfilesByUserIds } from '../../loaders/profileLoader.js';
-import { batchUserSubscribedTo } from '../../loaders/userSubscribedToLoader.js';
-import { batchSubscribedToUser } from '../../loaders/subscribedToUser.js';
 
 export const UserType: GraphQLObjectType = new GraphQLObjectType({
   name: 'User',
@@ -27,67 +21,29 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
 
     profile: {
       type: ProfileType,
-      resolve: async ({ id }: User, _, context, info) => {
-        const rawContext = context as Context;
-        const { dataloaders } = rawContext;
-        let profileLoader = dataloaders.get(info.fieldNodes);
-
-        if (!profileLoader) {
-          profileLoader = new DataLoader(batchProfilesByUserIds);
-          dataloaders.set(info.fieldNodes, profileLoader);
-        }
-
-        return profileLoader?.load(id);
-      },
+      resolve: async ({ id }: User, _, { loaders: { profileLoader } }: Context) =>
+        profileLoader.load(id),
     },
 
     posts: {
       type: new GraphQLList(PostType),
-      resolve: async ({ id }: User, _, context, info) => {
-        const rawContext = context as Context;
-        const { dataloaders } = rawContext;
-        let postsLoader = dataloaders.get(info.fieldNodes);
-        console.log(dataloaders);
-        if (!postsLoader) {
-          console.log('doesnt exist');
-          postsLoader = new DataLoader(batchPostsByUserIds);
-          dataloaders.set(info.fieldNodes, postsLoader);
-        }
-
-        return postsLoader?.load(id);
-      },
+      resolve: async ({ id }: User, _, { loaders: { postsLoader } }: Context) =>
+        postsLoader.load(id),
     },
 
     userSubscribedTo: {
       type: new GraphQLList(UserType),
-      resolve: async ({ id }: User, _, context, info) => {
-        const rawContext = context as Context;
-        const { dataloaders } = rawContext;
-        let userSubscribedToLoader = dataloaders.get(info.fieldNodes);
-
-        if (!userSubscribedToLoader) {
-          userSubscribedToLoader = new DataLoader(batchUserSubscribedTo);
-          dataloaders.set(info.fieldNodes, userSubscribedToLoader);
-        }
-
-        return userSubscribedToLoader?.load(id);
-      },
+      resolve: async (
+        { id }: User,
+        _,
+        { loaders: { userSubscribedToLoader } }: Context,
+      ) => userSubscribedToLoader.load(id),
     },
 
     subscribedToUser: {
       type: new GraphQLList(UserType),
-      resolve: async ({ id }: User, _, context, info) => {
-        const rawContext = context as Context;
-        const { dataloaders } = rawContext;
-        let subscribedToUserLoader = dataloaders.get(info.fieldNodes);
-
-        if (!subscribedToUserLoader) {
-          subscribedToUserLoader = new DataLoader(batchSubscribedToUser);
-          dataloaders.set(info.fieldNodes, subscribedToUserLoader);
-        }
-
-        return subscribedToUserLoader?.load(id);
-      },
+      resolve: async ({ id }: User, _, { loaders: { subscribedToUser } }: Context) =>
+        subscribedToUser.load(id),
     },
   }),
 });

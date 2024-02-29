@@ -2,10 +2,15 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { createGqlResponseSchema, gqlResponseSchema, schemaApp } from './schemas.js';
 import { graphql, parse, validate } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
-
-import { Context } from './types/model/ModelTypes.js';
+import { createMemeberTypeLoader } from './loaders/membersLoader.js';
+import { createPostsLoader } from './loaders/postLoader.js';
+import { createProfileLoader } from './loaders/profileLoader.js';
+import { createSubscribedToUserLoader } from './loaders/subscribedToUser.js';
+import { createUserLoader } from './loaders/userLoader.js';
+import { createUserToSubscribeLoader } from './loaders/userSubscribedToLoader.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { prisma } = fastify;
   fastify.route({
     url: '/',
     method: 'POST',
@@ -29,8 +34,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         source: query,
         variableValues: variables,
         contextValue: {
-          dataloaders: new WeakMap(),
-        } as Context,
+          prisma,
+          loaders: {
+            postsLoader: createPostsLoader(prisma),
+            profileLoader: createProfileLoader(prisma),
+            userLoader: createUserLoader(prisma),
+            userSubscribedToLoader: createUserToSubscribeLoader(prisma),
+            subscribedToUser: createSubscribedToUserLoader(prisma),
+            memeberTypeLoader: createMemeberTypeLoader(prisma),
+          },
+        },
       });
     },
   });
