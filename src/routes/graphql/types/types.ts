@@ -13,9 +13,9 @@ export type Loaders = {
   postsLoader: DataLoader<string, Post[]>;
   profileLoader: DataLoader<string, Profile>;
   userLoader: DataLoader<string, User>;
-  userSubscribedToLoader: DataLoader<string, Member>;
+  userSubscribedToLoader: DataLoader<string, Author[]>;
   subscribedToUser: DataLoader<string, Subscription[]>;
-  memeberTypeLoader: DataLoader<string, Author[]>;
+  memeberTypeLoader: DataLoader<string, Member>;
 };
 
 export type Context = {
